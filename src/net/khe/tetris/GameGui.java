@@ -37,13 +37,24 @@ public class GameGui extends JFrame {
         nextBlockCache = new BufferedImage(5*blockSize,5*blockSize,
                 BufferedImage.TYPE_INT_ARGB);
         setTitle("俄罗斯方块");
+        Font font = new Font("微软雅黑",0,16);
         JPanel rightPanel = new JPanel(){
             {
                 setLayout(new GridLayout(0,1));
-                add(new JLabel("得分： "));
                 scoreField.setEditable(false);
-                add(scoreField);
-                add(new JLabel("下一个："));
+                add(new JPanel(){
+                    {
+                        setFont(font);
+                        JLabel label = new JLabel("得分");
+                        label.setFont(font);
+                        scoreField.setFont(font);
+                        add(BorderLayout.NORTH,label);
+                        add(BorderLayout.CENTER,scoreField);
+                    }
+                });
+                JLabel label = new JLabel("下一个：");
+                label.setFont(font);
+                add(label);
                 nextBlockPanel.setBackground(Color.GRAY);
                 add(nextBlockPanel);
                 JTextArea explain = new JTextArea(6,3);
@@ -59,6 +70,7 @@ public class GameGui extends JFrame {
         add(BorderLayout.CENTER,showPanel);
         setSize(width*blockSize+130,height*blockSize+40);
         //getContentPane().addKeyListener(new EnterListener());
+        setFont(font);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setVisible(true);
         gameController.update();
@@ -170,14 +182,16 @@ public class GameGui extends JFrame {
             if(updatedFlag){
                 if(event instanceof KeyEvent){
                     KeyEvent e = (KeyEvent)event;
-                    if(e.getID()==KeyEvent.KEY_RELEASED){
+                    if(e.getID()==KeyEvent.KEY_PRESSED){
                         switch (e.getKeyCode()){
                             case KeyEvent.VK_UP:gameController.transform();break;
                             case KeyEvent.VK_DOWN:gameController.speedUp();break;
                             case KeyEvent.VK_LEFT:gameController.move(Point.Dir.WEST);break;
                             case KeyEvent.VK_RIGHT:gameController.move(Point.Dir.EAST);break;
+                            case KeyEvent.VK_ESCAPE:System.exit(0);
                             default:break;
                         }
+                        //updatedFlag = false;
                     }
                 }
             }
