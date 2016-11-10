@@ -1,26 +1,22 @@
 package net.khe.tetris;
 
-import org.omg.PortableInterceptor.SUCCESSFUL;
-
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
-import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.AWTEventListener;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
-import static net.khe.util.Print.*;
+import static net.khe.util.Print.println;
+
 /**
  * Created by hyc on 2016/11/7.
- * 旧的实现，已废弃
  */
-public class GameGui extends JFrame {
-    private GuiGameController gameController;
+public class GameGui2 extends JFrame {
+    private GameController2 gameController;
     private ExecutorService exec = Executors.newCachedThreadPool();
     private BufferedImage cache;
     private BufferedImage nextBlockCache;
@@ -29,10 +25,8 @@ public class GameGui extends JFrame {
     private JPanel showPanel = new ShowPanel();
     private JPanel nextBlockPanel = new NextBlockPanel();
     private Toolkit kit = Toolkit.getDefaultToolkit();
-    private boolean updatedFlag = false;
-    //private JButton keyListenerButton;
-    public GameGui(int width,int height){
-        gameController = new GuiGameController(width,height);
+    public GameGui2(int width, int height){
+        gameController = new GameController2(width,height);
         cache = new BufferedImage(width*blockSize,height*blockSize,
                 BufferedImage.TYPE_INT_ARGB);
         nextBlockCache = new BufferedImage(5*blockSize,5*blockSize,
@@ -72,9 +66,10 @@ public class GameGui extends JFrame {
         setSize(width*blockSize+220,height*blockSize+40);
         //getContentPane().addKeyListener(new EnterListener());
         setFont(font);
+        initController();
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setVisible(true);
-        gameController.update();
+
     }
     private synchronized void drawBlock(Graphics g,Block block){
         int x = block.getCoordin().getX()*blockSize;
@@ -89,9 +84,10 @@ public class GameGui extends JFrame {
         g.setColor(Color.WHITE);
         g.fillRect(0,0,cache.getWidth(),cache.getHeight());
         g.setColor(Color.BLACK);
-        g.drawLine(0,3*blockSize,cache.getWidth()*blockSize,3*blockSize);
-        for(Point key:gameController.getBlocks().keySet()){
-            Block block = gameController.getBlocks().get(key);
+        int l = gameController.gameOverLine;
+        g.drawLine(0,l*blockSize,cache.getWidth()*blockSize,l*blockSize);
+        for(Point key:gameController.getBlockMap().keySet()){
+            Block block = gameController.getBlockMap().get(key);
             drawBlock(g,block);
         }
         for(Block block:gameController.getActiveBlock().getBlocks()){
@@ -99,12 +95,7 @@ public class GameGui extends JFrame {
         }
         showPanel.repaint();
     }
-    private synchronized void reset(){
-        scoreField.setText("0");
-        gameController = new GuiGameController(gameController.width,gameController.height);
-        gameController.updateNextBlock();
-        repaint();
-    }
+
     private class ShowPanel extends JPanel{
         @Override
         protected void paintComponent(Graphics g){
@@ -120,53 +111,69 @@ public class GameGui extends JFrame {
             g.drawImage(nextBlockCache,0,0,nextBlockCache.getWidth(),nextBlockCache.getHeight(),null);
         }
     }
-    private class GuiGameController
-            extends TetrisGameController implements Runnable{
-        public GuiGameController(int width, int height) {
-            super(width, height);
-        }
-        @Override
-        public synchronized void updateBlocks(){
-            updatePanel();
-            updatedFlag = true;
-        }
-        @Override
-        public synchronized void updateScore(){
-            scoreField.setText(""+gameController.getScore());
-        }
-        @Override
-        public synchronized void gameOver(){
-            JOptionPane.showMessageDialog(
-                    GameGui.this,
-                    "得分："+getScore(),
-                    "Game Over",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
-            System.exit(0);
-        }
-        @Override
-        public synchronized void updateNextBlock(){
-            Graphics g = nextBlockCache.getGraphics();
-            g.setColor(Color.GRAY);
-            g.fillRect(0,0,nextBlockCache.getWidth(),nextBlockCache.getHeight());
-            int firstx = gameController.getNextBlock().getBlocks()[0].getCoordin().getX();
-            int firsty = gameController.getNextBlock().getBlocks()[0].getCoordin().getY();
-            for(Block block:gameController.getNextBlock().getBlocks()){
-                int x = (block.getCoordin().getX()-firstx)*blockSize;
-                int y = (block.getCoordin().getY()-firsty)*blockSize;
-                g.setColor(block.getColor());
-                g.fillRect(x,y,blockSize,blockSize);
-                g.setColor(Color.BLACK);
-                g.drawRect(x,y,blockSize,blockSize);
+    private void initController(){
+        gameController.addListener(new TetrisEventListener() {
+            @Override
+            protected GameEvent.Type listeningEvent() {
+                return GameEvent.Type.GAMEOVER;
             }
-            nextBlockPanel.repaint();
-        }
-        @Override
-        public void run(){
-            while (!Thread.interrupted()){
-                gameController.move(Point.Dir.SOUTH);
+
+            @Override
+            protected void actionPerformed(GameController2 controller, GameEvent event) {
+                exec.shutdownNow();
+                JOptionPane.showMessageDialog(
+                        GameGui2.this,
+                        "Score: "+scoreField.getText(),
+                        "Game Over",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+                System.exit(0);
             }
-        }
+        });
+        gameController.addListener(new TetrisEventListener() {
+            @Override
+            protected GameEvent.Type listeningEvent() {
+                return GameEvent.Type.UPDATE;
+            }
+
+            @Override
+            protected void actionPerformed(GameController2 controller, GameEvent event) {
+                updatePanel();
+            }
+        });
+        gameController.addListener(new TetrisEventListener() {
+            @Override
+            protected GameEvent.Type listeningEvent() {
+                return GameEvent.Type.NEXT_BLOCK_UPDATE;
+            }
+
+            @Override
+            protected void actionPerformed(GameController2 controller, GameEvent event) {
+                Graphics g = nextBlockCache.getGraphics();
+                g.setColor(Color.GRAY);
+                g.fillRect(0,0,nextBlockCache.getWidth(),nextBlockCache.getHeight());
+                Block firstBlock = gameController.getNextBlock().getBlocks()[0];
+                for(Block block:gameController.getNextBlock().getBlocks()){
+                    int x = block.getCoordin().getX()-firstBlock.getCoordin().getX();
+                    int y = block.getCoordin().getY()-firstBlock.getCoordin().getY();
+                    Block b = new Block(new Point(x,y));
+                    b.setColor(firstBlock.getColor());
+                    drawBlock(g,b);
+                }
+                nextBlockPanel.repaint();
+            }
+        });
+        gameController.addListener(new TetrisEventListener() {
+            @Override
+            protected GameEvent.Type listeningEvent() {
+                return GameEvent.Type.SCORE_UPDATE;
+            }
+
+            @Override
+            protected void actionPerformed(GameController2 controller, GameEvent event) {
+                scoreField.setText(""+gameController.getScore());
+            }
+        });
     }
     private class GameStartListener implements AWTEventListener{
         @Override
@@ -186,26 +193,36 @@ public class GameGui extends JFrame {
     private class GameControlListener implements AWTEventListener{
         @Override
         public void eventDispatched(AWTEvent event){
-            if(updatedFlag){
-                if(event instanceof KeyEvent){
-                    KeyEvent e = (KeyEvent)event;
-                    if(e.getID()==KeyEvent.KEY_PRESSED){
+            if(event instanceof KeyEvent){
+                KeyEvent e = (KeyEvent)event;
+                if(e.getID()==KeyEvent.KEY_PRESSED){
+                    BlockingQueue<GameEvent> eq = gameController.eventQueue;
+                    try{
                         switch (e.getKeyCode()){
-                            case KeyEvent.VK_UP:gameController.transform();break;
-                            case KeyEvent.VK_DOWN:gameController.speedUp();break;
-                            case KeyEvent.VK_LEFT:gameController.move(Point.Dir.WEST);break;
-                            case KeyEvent.VK_RIGHT:gameController.move(Point.Dir.EAST);break;
-                            case KeyEvent.VK_R:reset();break;
-                            case KeyEvent.VK_ESCAPE:System.exit(0);
+                            case KeyEvent.VK_UP:
+                                eq.put(new GameEvent(GameEvent.Type.TRANSFORM));
+                                break;
+                            case KeyEvent.VK_DOWN:
+                                eq.put(new GameEvent(GameEvent.Type.SPEED_UP));
+                                break;
+                            case KeyEvent.VK_LEFT:
+                                eq.put(new MoveEvent(Point.Dir.WEST));
+                                break;
+                            case KeyEvent.VK_RIGHT:
+                                eq.put(new MoveEvent(Point.Dir.EAST));
+                                break;
+                            case KeyEvent.VK_R:gameController.reset();break;
+                            case KeyEvent.VK_ESCAPE:System.exit(0);break;
                             default:break;
                         }
-                        //updatedFlag = false;
+                    }catch (InterruptedException err){
+                        println("Gui get key interrupted");
                     }
                 }
             }
         }
     }
     public static void main(String[] args) {
-        GameGui gui = new GameGui(13,20);
+        GameGui2 gui = new GameGui2(13,20);
     }
 }

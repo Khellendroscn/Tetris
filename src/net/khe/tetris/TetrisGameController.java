@@ -9,6 +9,8 @@ import java.util.concurrent.TimeUnit;
 import static net.khe.util.Print.*;
 /**
  * Created by hyc on 2016/11/7.
+ * 使用模板方法实现的游戏控制器
+ * 旧的实现，已废弃
  */
 public class TetrisGameController {
     private TetrisBlock activeBlock;
@@ -123,12 +125,10 @@ public class TetrisGameController {
             }
             if(blockCount>=width){
                 clearLine(j);
-                score+=scoreOfLine;
-                //scoreChanged = true;
+                tryClearLine();
             }
         }
         updateScore();
-        //notifyAll();
     }
     private synchronized void clearLine(int index){
         for(int i=0;i<width;++i){
@@ -146,6 +146,7 @@ public class TetrisGameController {
                 }
             }
         }
+        score+=scoreOfLine;
         updateBlocks();
         try {
             TimeUnit.MILLISECONDS.sleep(WAIT_TIME);
