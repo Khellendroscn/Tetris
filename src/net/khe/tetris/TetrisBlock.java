@@ -4,6 +4,7 @@ import net.khe.util.Factory;
 import net.khe.util.Generator;
 
 import java.awt.*;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.Random;
 /**
  * Created by hyc on 2016/11/7.
  */
-public abstract class TetrisBlock {
+public abstract class TetrisBlock implements Serializable{
     protected Block[] blocks;
     protected boolean hasTransformed = false;
     protected abstract void initBlocks(Point firstBlockCoordin);
@@ -27,7 +28,7 @@ public abstract class TetrisBlock {
             block.move(dir);
     }
 
-    public static class RandomGenerator implements Generator<TetrisBlock>{
+    public static class RandomGenerator implements Generator<TetrisBlock>,Serializable{
         private final Point firstBlockCoordin;
         private final Generator<Color> colorGenerator =
                 new net.khe.util.RandomGenerator.Color();

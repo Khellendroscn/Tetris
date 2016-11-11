@@ -1,5 +1,7 @@
 package net.khe.tetris;
 
+import java.io.Serializable;
+
 /**
  * Created by hyc on 2016/11/9.
  * 俄罗斯方块事件监听器抽象类
@@ -10,7 +12,7 @@ package net.khe.tetris;
  * update方法会在验证事件类型后将参数转发到actionPerformed方法
  * 子类必须实现actionPerformed方法来定义监听器的行为
  */
-public abstract class TetrisEventListener implements GameEventListener {
+public abstract class TetrisEventListener implements GameEventListener,Serializable{
     //子类重载该方法来说明监听的事件类型
     protected abstract GameEvent.Type listeningEvent();
     //子类重载该方法来处理事件
@@ -20,7 +22,8 @@ public abstract class TetrisEventListener implements GameEventListener {
     public void update(Subject subject,GameEvent event){
         //check
         if(!(subject instanceof GameController2)) return;
-        if(!event.type.equals(listeningEvent())) return;
+        //如果type==null，说明该监听器监听所有事件
+        if(listeningEvent()!=null&&!event.type.equals(listeningEvent())) return;
         //perform
         actionPerformed((GameController2)subject,event);
     }

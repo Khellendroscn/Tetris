@@ -26,6 +26,7 @@ public class TouchEventListener extends TetrisEventListener{
         controller.nextBlocks();
         controller.setSpeedUpLock(true);
         try{
+            controller.eventQueue.put(new BlockChangedEvent(controller.getActiveBlock()));
             controller.eventQueue.put(new GameEvent(GameEvent.Type.UPDATE));
             controller.eventQueue.put(new GameEvent(GameEvent.Type.NEXT_BLOCK_UPDATE));
             TimeUnit.MILLISECONDS.sleep(controller.getSleepTime());

@@ -2,12 +2,13 @@ package net.khe.tetris;
 
 import net.khe.util.EnumRandom;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * Created by hyc on 2016/11/2.
  */
-public class Point {
+public class Point implements Serializable{
     enum Dir{
         NORTH,
         SOUTH,

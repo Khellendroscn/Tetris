@@ -1,4 +1,7 @@
 package net.khe.tetris;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.*;
 import static net.khe.util.Print.*;
@@ -20,7 +23,7 @@ import static net.khe.util.Print.*;
  * 来添加监听器
  * 关于监听器的具体内容参阅TetrisEventListener类
  */
-public class GameController2 implements Subject,Runnable{
+public class GameController2 implements Subject,Runnable,Serializable{
     private TetrisBlock activeBlock;//玩家正常控制的方块
     private TetrisBlock nextBlock;//下一个方块
     //保存已落下的方块的map
@@ -85,7 +88,7 @@ public class GameController2 implements Subject,Runnable{
             if(!Thread.interrupted()){
                 //如果发现更新，尝试从事件队列中获取一个事件，并分发给所以监听者
                 GameEvent event = eventQueue.take();
-                println("get event: "+event);
+                //println("get event: "+event);
                 for(GameEventListener listener:eventListeners){
                     listener.update(this,event);
                 }
@@ -173,5 +176,15 @@ public class GameController2 implements Subject,Runnable{
 
     public synchronized void setSpeedUpLock(boolean speedUpLock) {
         this.speedUpLock = speedUpLock;
+    }
+
+    public static void main(String[] args) throws Exception{
+        ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream("test/test.txt"));
+        GameController2 controller2 = new GameController2(10,10);
+        os.writeObject(controller2);
+        os.flush();
+    }
+    public void setActiveBlock(TetrisBlock block){
+        activeBlock = block;
     }
 }

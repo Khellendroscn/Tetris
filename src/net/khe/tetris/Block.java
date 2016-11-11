@@ -1,11 +1,12 @@
 package net.khe.tetris;
 
 import java.awt.*;
+import java.io.Serializable;
 
 /**
  * Created by hyc on 2016/11/7.
  */
-public class Block {
+public class Block implements Serializable{
     private Point coordin;
     private Color color = Color.BLACK;
     public Block(Point coordin){this.coordin = coordin;}
