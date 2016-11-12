@@ -12,6 +12,7 @@ public class GameEvent implements Serializable{
         MOVE,TRANSFORM,SPEED_UP,
         TOUCH, GAMEOVER, UPDATE,
         SCORE_UPDATE,NEXT_BLOCK_UPDATE,BLOCK_CHANGED_EVENT,
+        SLEEP_EVENT,
     }
     public final Type type;
     public GameEvent(Type type){

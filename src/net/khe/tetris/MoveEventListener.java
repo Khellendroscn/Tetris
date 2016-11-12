@@ -18,6 +18,11 @@ public class MoveEventListener extends TetrisEventListener{
         MoveEvent e = (MoveEvent)event;
         if(e.dir.equals(Point.Dir.NORTH)) return;
         try {
+            if(controller.isTouchBlock()){
+                if(((MoveEvent) event).dir == Point.Dir.SOUTH)
+                    controller.eventQueue.put(new GameEvent(GameEvent.Type.TOUCH));
+                return;
+            }
             //移动方块
             if(e.dir!= Point.Dir.SOUTH
                     &&controller.isTouchWall()==3)
@@ -34,11 +39,10 @@ public class MoveEventListener extends TetrisEventListener{
             //如果被处理的是一个下落事件，再添加一个下落事件并等待
             if(e.dir== Point.Dir.SOUTH) {
                 //如果发现方块接触，发送接触事件
-                if(controller.isTouchBlock())
-                    controller.eventQueue.put(new GameEvent(GameEvent.Type.TOUCH));
-                controller.eventQueue.put(new MoveEvent(Point.Dir.SOUTH));
+
                 //等待
-                TimeUnit.MILLISECONDS.sleep(controller.getSleepTime());
+                controller.eventQueue.put(new GameEvent(GameEvent.Type.SLEEP_EVENT));
+                controller.eventQueue.put(new MoveEvent(Point.Dir.SOUTH));
             }
         }catch (InterruptedException err){
             System.out.println("MoveEventListener interrupted");

@@ -64,6 +64,7 @@ public class GameController2 implements Subject,Runnable,Serializable{
         addListener(new MoveEventListener());
         addListener(new TransformEventListener());
         addListener(new SpeedUpEventListener());
+        addListener(new SleepEventListener());
     }
     public synchronized void nextBlocks(){
         //更新正在操控的方块和下一个方块
