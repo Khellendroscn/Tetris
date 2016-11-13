@@ -14,6 +14,7 @@ public class TouchEventListener extends TetrisEventListener{
 
     @Override
     protected void actionPerformed(GameController2 controller, GameEvent event) {
+        if(!controller.isTouchBlock())return;
         //恢复正常速度
         controller.setSleepTime(GameController2.DEFAULT_SLEEP_TIME);
         //如果发现游戏结束，退出该方法
@@ -26,10 +27,10 @@ public class TouchEventListener extends TetrisEventListener{
         controller.nextBlocks();
         controller.setSpeedUpLock(true);
         try{
-            controller.eventQueue.put(new GameEvent(GameEvent.Type.SLEEP_EVENT));
-            controller.eventQueue.put(new BlockChangedEvent(controller.getActiveBlock()));
             controller.eventQueue.put(new GameEvent(GameEvent.Type.UPDATE));
             controller.eventQueue.put(new GameEvent(GameEvent.Type.NEXT_BLOCK_UPDATE));
+            controller.eventQueue.put(new GameEvent(GameEvent.Type.SLEEP_EVENT));
+            controller.eventQueue.put(new BlockChangedEvent(controller.getActiveBlock()));
             controller.eventQueue.put(new MoveEvent(Point.Dir.SOUTH));
         }catch (InterruptedException err){
             System.out.println("TouchEventListener interrupted");

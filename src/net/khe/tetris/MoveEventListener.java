@@ -38,8 +38,6 @@ public class MoveEventListener extends TetrisEventListener{
             controller.eventQueue.put(new GameEvent(GameEvent.Type.UPDATE));
             //如果被处理的是一个下落事件，再添加一个下落事件并等待
             if(e.dir== Point.Dir.SOUTH) {
-                //如果发现方块接触，发送接触事件
-
                 //等待
                 controller.eventQueue.put(new GameEvent(GameEvent.Type.SLEEP_EVENT));
                 controller.eventQueue.put(new MoveEvent(Point.Dir.SOUTH));

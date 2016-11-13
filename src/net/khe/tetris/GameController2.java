@@ -185,7 +185,7 @@ public class GameController2 implements Subject,Runnable,Serializable{
         os.writeObject(controller2);
         os.flush();
     }
-    public void setActiveBlock(TetrisBlock block){
+    public synchronized void setActiveBlock(TetrisBlock block){
         activeBlock = block;
     }
 }

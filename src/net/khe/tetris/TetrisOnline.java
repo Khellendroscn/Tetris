@@ -73,7 +73,7 @@ public abstract class TetrisOnline {
 
             @Override
             protected void actionPerformed(GameController2 controller, GameEvent event) {
-                exec.shutdownNow();
+                //exec.shutdownNow();
                 String winner;
                 int p1Score = new Integer(messagePanel.player1ScoreField.getText());
                 int p2Score = new Integer(messagePanel.player2ScoreField.getText());
