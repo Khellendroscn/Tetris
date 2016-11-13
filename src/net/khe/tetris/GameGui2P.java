@@ -15,7 +15,7 @@ public class GameGui2P extends JFrame{
     private GameController2 player1;
     private GameController2 player2;
     private Toolkit kit;
-    public static int blockSize = 32;
+    public static int blockSize = 24;
 
     //components:
     private ShowPanel player1Panel;

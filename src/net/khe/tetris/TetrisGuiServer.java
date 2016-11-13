@@ -2,6 +2,7 @@ package net.khe.tetris;
 
 import javax.swing.*;
 import java.io.IOException;
+import java.lang.reflect.Proxy;
 import java.net.InetAddress;
 
 /**
@@ -36,4 +37,5 @@ public class TetrisGuiServer extends TetrisOnline {
         TetrisServer server = (TetrisServer)onlineGameComponent;
         return server.getPot();
     }
+
 }

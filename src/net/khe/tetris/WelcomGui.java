@@ -59,11 +59,11 @@ public class WelcomGui extends JFrame{
                 dialog.setHost(server.getHost().toString());
                 dialog.setPot(server.getPot());
                 dialog.setEditable(false);
+                TetrisGuiServer finalServer = server;
                 dialog.acceptButton.addActionListener((ActionEvent event)->{
                     try{
-                        server.waitForLink();
                         WelcomGui.this.dispose();
-                        server.gameStart();
+                        finalServer.gameStart();
                     }catch (IOException e){
                         JOptionPane.showMessageDialog(
                                 null,
@@ -86,7 +86,6 @@ public class WelcomGui extends JFrame{
                         TetrisGuiClient client =
                                 new TetrisGuiClient(WIDTH,HEIGHT,host,pot);
                         client.initOnlineGameComponent();
-                        client.waitForLink();
                         client.gameStart();
                         dispose();
                         WelcomGui.this.dispose();

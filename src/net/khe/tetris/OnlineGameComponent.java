@@ -40,6 +40,7 @@ public abstract class OnlineGameComponent {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            System.exit(1);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
@@ -77,7 +78,7 @@ public abstract class OnlineGameComponent {
             protected void actionPerformed(GameController2 controller, GameEvent event) {
                 //下落事件不转发
                 if(isAcceptEvent(event)){
-                    System.out.println("try to send event");
+                    //System.out.println("try to send event");
                     talk(event);
                 }else{
                     System.out.println(event.type);

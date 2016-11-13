@@ -26,10 +26,10 @@ public class TouchEventListener extends TetrisEventListener{
         controller.nextBlocks();
         controller.setSpeedUpLock(true);
         try{
+            controller.eventQueue.put(new GameEvent(GameEvent.Type.SLEEP_EVENT));
             controller.eventQueue.put(new BlockChangedEvent(controller.getActiveBlock()));
             controller.eventQueue.put(new GameEvent(GameEvent.Type.UPDATE));
             controller.eventQueue.put(new GameEvent(GameEvent.Type.NEXT_BLOCK_UPDATE));
-            controller.eventQueue.put(new GameEvent(GameEvent.Type.SLEEP_EVENT));
             controller.eventQueue.put(new MoveEvent(Point.Dir.SOUTH));
         }catch (InterruptedException err){
             System.out.println("TouchEventListener interrupted");
@@ -39,7 +39,7 @@ public class TouchEventListener extends TetrisEventListener{
         Block[] blocks = controller.getActiveBlock().getBlocks();
         for(Block block:blocks){
             if(block.getCoordin().getY()<=controller.gameOverLine){
-                System.out.println(block);
+                System.out.println("Game over at" + block);
                 try{
                     controller.eventQueue.put
                             (new GameEvent(GameEvent.Type.GAMEOVER));

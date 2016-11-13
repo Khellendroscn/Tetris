@@ -3,6 +3,7 @@ package net.khe.tetris;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.AWTEventListener;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
@@ -22,26 +23,41 @@ public abstract class TetrisOnline {
     protected ExecutorService exec = Executors.newCachedThreadPool();
     protected Toolkit kit = Toolkit.getDefaultToolkit();
     private GameMessagePanel messagePanel;
-
+    private JDialog waitDialog = new WaitDialog();
     public TetrisOnline(int width, int height)throws IOException{
         player1 = new GameController2(width,height);
         gui.setKit(kit);
         kit.addAWTEventListener(new GameControlListener(),AWTEvent.KEY_EVENT_MASK);
     }
     protected abstract OnlineGameComponent newOnlineGameComponent()throws IOException;
-    protected void gameStart(){
-        gui.display("俄罗斯方块 双人对战版");
-        exec.execute(player1);
-        exec.execute(player2);
-    }
-    public void waitForLink()throws IOException{
-        onlineGameComponent.start();
-        player2 = onlineGameComponent.getPlayer2();
-        messagePanel = new GameMessagePanel(player1,player2);
-        gui.setMessagePanel(messagePanel);
-        gui.setPlayers(player1,player2);
-        addListeners(player1,messagePanel.player1ScoreField);
-        addListeners(player2,messagePanel.player2ScoreField);
+    public void gameStart()throws IOException{
+        waitDialog.setVisible(true);
+        exec.execute(()->{
+            try {
+                //分配新线程来等待连接
+                onlineGameComponent.start();
+                //连接成功，关闭等待对话框
+                waitDialog.dispose();
+                //初始化其他组件
+                player2 = onlineGameComponent.getPlayer2();
+                messagePanel = new GameMessagePanel(player1,player2);
+                gui.setMessagePanel(messagePanel);
+                gui.setPlayers(player1,player2);
+                //添加监听器
+                addListeners(player1,messagePanel.player1ScoreField);
+                addListeners(player2,messagePanel.player2ScoreField);
+                gui.display("俄罗斯方块 双人对战版");
+                exec.execute(player1);
+                exec.execute(player2);
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(
+                        null,
+                        "服务器初始化错误",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            }
+        });
     }
     public void initOnlineGameComponent()throws IOException{
         onlineGameComponent = newOnlineGameComponent();
@@ -83,6 +99,7 @@ public abstract class TetrisOnline {
             }
         });
     }
+    public boolean isLinked(){return onlineGameComponent.isLinked();}
     private class GameControlListener implements AWTEventListener {
         @Override
         public void eventDispatched(AWTEvent event){
@@ -111,6 +128,17 @@ public abstract class TetrisOnline {
                     }
                 }
             }
+        }
+    }
+    class WaitDialog extends JDialog{
+        private JButton cancelButton = new JButton("取消");
+        public WaitDialog(){
+            add(BorderLayout.CENTER,new JLabel("连接中，请稍等..."));
+            add(BorderLayout.SOUTH,cancelButton);
+            cancelButton.addActionListener((ActionEvent)->{
+                System.exit(0);
+            });
+            setSize(200,100);
         }
     }
 }
