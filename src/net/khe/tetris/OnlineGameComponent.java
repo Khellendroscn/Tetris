@@ -6,6 +6,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * Created by hyc on 2016/11/11.
@@ -39,8 +40,7 @@ public abstract class OnlineGameComponent {
                 player2.eventQueue.put(event);
             }
         } catch (IOException e) {
-            e.printStackTrace();
-            System.exit(1);
+            throw new RuntimeException(new PlayerExitException("另一个玩家已经离开游戏"));
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
@@ -133,4 +133,9 @@ public abstract class OnlineGameComponent {
         exec.execute(()->listen());
     }
     public GameController2 getPlayer2(){return player2;}
+}
+class PlayerExitException extends Exception{
+    public PlayerExitException(String what){
+        super(what);
+    }
 }

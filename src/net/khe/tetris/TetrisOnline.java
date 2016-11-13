@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import static net.khe.util.Print.println;
 
@@ -20,7 +21,8 @@ public abstract class TetrisOnline {
     protected GameController2 player2;
     public GameGui2P gui = new GameGui2P();
     protected OnlineGameComponent onlineGameComponent;
-    protected ExecutorService exec = Executors.newCachedThreadPool();
+    protected ExecutorService exec =
+            Executors.newCachedThreadPool(new HandleThreadFactory());
     protected Toolkit kit = Toolkit.getDefaultToolkit();
     private GameMessagePanel messagePanel;
     private JDialog waitDialog = new WaitDialog();
@@ -139,6 +141,30 @@ public abstract class TetrisOnline {
                 System.exit(0);
             });
             setSize(200,100);
+        }
+    }
+    class PlayerExitExceptionHandler
+            implements Thread.UncaughtExceptionHandler{
+
+        @Override
+        public void uncaughtException(Thread t, Throwable e) {
+            //处理玩家强制退出异常
+            if(e.getCause() instanceof PlayerExitException){
+                JOptionPane.showMessageDialog(
+                        gui,
+                        "另一个玩家已退出游戏",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                System.exit(0);
+            }
+        }
+    }
+    class HandleThreadFactory implements ThreadFactory{
+        public Thread newThread(Runnable r){
+            Thread t = new Thread(r);
+            t.setUncaughtExceptionHandler(new PlayerExitExceptionHandler());
+            return t;
         }
     }
 }
