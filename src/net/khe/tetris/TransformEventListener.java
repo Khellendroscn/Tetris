@@ -15,6 +15,7 @@ public class TransformEventListener extends TetrisEventListener {
     @Override
     protected void actionPerformed(GameController2 controller, GameEvent event) {
         controller.getActiveBlock().transform();
+        if(controller.isTouchBlock()) controller.getActiveBlock().transform();
         checkOutOfRange(controller);
         try {
             controller.eventQueue.put(new GameEvent(GameEvent.Type.UPDATE));
